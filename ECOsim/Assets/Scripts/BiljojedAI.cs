@@ -6,13 +6,23 @@ using Random = UnityEngine.Random;
 
 public class BiljojedAI : MonoBehaviour
 {
-    public float moveSpeed;
-    public float sightRange;
-
-    public float hunger;
-    public float hungerRate;
-    public float thirst;
-    public float thirstRate;
+    private float moveSpeed;
+    public float maxMoveSpeed;
+    public float minMoveSpeed;
+    
+    private float sightRange;
+    public float maxSightRange;
+    public float minSightRange;
+    
+    [SerializeField]
+    private float hunger;
+    private float dyingOfHunger;
+    private float hungerRate;
+    
+    [SerializeField]
+    private float thirst;
+    private float dyingOfThirst;
+    private float thirstRate;
     
     private Vector2 targetPosition;
     private bool hasTarget = false;    
@@ -22,6 +32,15 @@ public class BiljojedAI : MonoBehaviour
 
     public Vector2 maxBounds;
     public Vector2 minBounds;
+
+    void Start()
+    {
+        moveSpeed = Random.Range(minMoveSpeed, maxMoveSpeed);
+        sightRange = Random.Range(minSightRange, maxSightRange);
+        hungerRate = (moveSpeed + sightRange) * 1.5f;
+        thirstRate = (moveSpeed + sightRange) * 2f;
+    }
+    
     void Update()
     {
         if (isWaiting)return;
@@ -29,14 +48,19 @@ public class BiljojedAI : MonoBehaviour
         
         hunger += Time.deltaTime * hungerRate;
         thirst += Time.deltaTime * thirstRate;
-
+        
         GameObject target = FindTarget();
+        
+        if ((hunger >= 120 || thirst >= 120)&&target!=null)
+        {
+            Destroy(gameObject);
+        }
         
         if (target != null)
         {
             float dist = Vector2.Distance(transform.position, target.transform.position);
 
-            if (dist < 1.5f)
+            if (dist < 0.5f)
             {
                 StartCoroutine(Interacting(target));
                 return;
@@ -50,6 +74,8 @@ public class BiljojedAI : MonoBehaviour
             StartCoroutine(WaitBeforGoing());
         }
 
+        
+        
         MoveTowardsTarget();
     }
 
@@ -109,7 +135,7 @@ public class BiljojedAI : MonoBehaviour
     {
         isWaiting = true;
         hasTarget = false;
-        yield return new WaitForSecondsRealtime(0.5f);
+        yield return new WaitForSecondsRealtime(0f);
         targetPosition = GetRandomTargetInSightRange();
         hasTarget = true;
         isWaiting = false;
@@ -117,7 +143,14 @@ public class BiljojedAI : MonoBehaviour
 
     private void MoveTowardsTarget()
     {
-        Vector2 pos = Vector2.MoveTowards(transform.position, targetPosition, moveSpeed*Time.deltaTime);
+        Vector2 currentPosition = transform.position;
+        Vector2 direction = (targetPosition-currentPosition).normalized;
+        float distanceToTarget = Vector2.Distance(currentPosition, targetPosition);
+        
+        float stepSize = Mathf.Max(1.5f,moveSpeed*Time.deltaTime);
+        float actualStep = Math.Min(stepSize, distanceToTarget);
+        
+        Vector2 pos = Vector2.MoveTowards(currentPosition, targetPosition, actualStep*Time.deltaTime*moveSpeed);
         
         pos.x = Mathf.Clamp(pos.x, minBounds.x, maxBounds.x);
         pos.y = Mathf.Clamp(pos.y, minBounds.y, maxBounds.y);
@@ -129,6 +162,6 @@ public class BiljojedAI : MonoBehaviour
     {
         Gizmos.color = Color.green;
         Gizmos.DrawWireSphere(transform.position, sightRange);
-        Gizmos.DrawWireSphere(transform.position, 0.5f);
+        Gizmos.DrawWireSphere(transform.position, 1f);
     }
 }
