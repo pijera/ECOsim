@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 1110740286466704418}
   m_Layer: 0
   m_Name: Pimpum
-  m_TagString: Untagged
+  m_TagString: Biljojed
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -108,8 +108,13 @@ MonoBehaviour:
   minSightRange: 4
   hunger: 0
   thirst: 0
+  gender: 0
+  readyToReproduce: 0
+  readyToReproduceRate: 10
+  isBorn: 0
   maxBounds: {x: 9.5, y: 4.5}
   minBounds: {x: -9.5, y: -4.5}
+  agentPrefab: {fileID: 5640339459727741933}
 --- !u!61 &6222963346340601555
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -117,7 +122,7 @@ BoxCollider2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5640339459727741933}
-  m_Enabled: 0
+  m_Enabled: 1
   serializedVersion: 3
   m_Density: 1
   m_Material: {fileID: 0}
@@ -140,7 +145,7 @@ BoxCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0

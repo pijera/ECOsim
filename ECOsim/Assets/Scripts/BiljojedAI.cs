@@ -6,23 +6,41 @@ using Random = UnityEngine.Random;
 
 public class BiljojedAI : MonoBehaviour
 {
+    //Brzina kretanja
+    [Header("Brzina")]
+    [SerializeField]
     private float moveSpeed;
     public float maxMoveSpeed;
     public float minMoveSpeed;
     
+    //Vid
+    [Header("Vid")]
+    [SerializeField]
     private float sightRange;
     public float maxSightRange;
     public float minSightRange;
     
+    //Glad
+    [Header("Potrebe")]
     [SerializeField]
     private float hunger;
     private float dyingOfHunger;
     private float hungerRate;
     
+    //Zedj
     [SerializeField]
     private float thirst;
     private float dyingOfThirst;
     private float thirstRate;
+    
+    //Reprodukcija
+    [Header("Reprodukcija")]
+    [SerializeField]
+    private bool gender;//0-zensko(false) 1-musko(true)
+    [SerializeField]
+    private float readyToReproduce;
+    public float readyToReproduceRate;
+    public Boolean isBorn = false;
     
     private Vector2 targetPosition;
     private bool hasTarget = false;    
@@ -33,12 +51,28 @@ public class BiljojedAI : MonoBehaviour
     public Vector2 maxBounds;
     public Vector2 minBounds;
 
+    public GameObject agentPrefab;
+    
     void Start()
     {
-        moveSpeed = Random.Range(minMoveSpeed, maxMoveSpeed);
-        sightRange = Random.Range(minSightRange, maxSightRange);
-        hungerRate = (moveSpeed + sightRange) * 1.5f;
-        thirstRate = (moveSpeed + sightRange) * 2f;
+        if (!isBorn)
+        {
+            moveSpeed = Random.Range(minMoveSpeed, maxMoveSpeed);
+            sightRange = Random.Range(minSightRange, maxSightRange);
+            hungerRate = (moveSpeed + sightRange) * 1.5f;
+            thirstRate = (moveSpeed + sightRange) * 2f;
+
+            int malefemale = Random.Range(0, 2);
+            if (malefemale == 0)
+            {
+                gender = false;
+            }
+            else
+            {
+                gender = true;
+            }
+        }
+
     }
     
     void Update()
@@ -48,12 +82,28 @@ public class BiljojedAI : MonoBehaviour
         
         hunger += Time.deltaTime * hungerRate;
         thirst += Time.deltaTime * thirstRate;
+        readyToReproduce += Time.deltaTime * readyToReproduceRate;
         
         GameObject target = FindTarget();
         
         if ((hunger >= 120 || thirst >= 120)&&target!=null)
         {
             Destroy(gameObject);
+        }
+
+        if (isReadyToReproduce())
+        {
+            var mate = FindMate();
+            if (mate!=null)
+            {
+                targetPosition = mate.transform.position;
+                hasTarget = true;
+
+                if (Vector2.Distance(transform.position, mate.transform.position) < 0.5f)
+                {
+                    StartCoroutine(ReproduceWith(mate.GetComponent<BiljojedAI>()));
+                }
+            }
         }
         
         if (target != null)
@@ -65,6 +115,7 @@ public class BiljojedAI : MonoBehaviour
                 StartCoroutine(Interacting(target));
                 return;
             }
+
             targetPosition = target.transform.position;
             hasTarget = true;
         }
@@ -74,8 +125,6 @@ public class BiljojedAI : MonoBehaviour
             StartCoroutine(WaitBeforGoing());
         }
 
-        
-        
         MoveTowardsTarget();
     }
 
@@ -84,7 +133,7 @@ public class BiljojedAI : MonoBehaviour
         Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, sightRange);
         GameObject closest = null;
         float closestDistance = Mathf.Infinity;
-
+        
         foreach (var hit in hits)
         {
             if (hunger > 50f && hit.CompareTag("Food"))
@@ -105,7 +154,35 @@ public class BiljojedAI : MonoBehaviour
                     closestDistance = distance;
                 }
             }
+            
         }
+        return closest;
+    }
+
+    GameObject FindMate()
+    {
+        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, sightRange);
+        GameObject closest = null;
+        float closestDistance = Mathf.Infinity;
+
+        foreach (var hit in hits)
+        {
+            if (!hit.CompareTag("Biljojed")) continue;
+
+            var other = hit.GetComponent<BiljojedAI>();
+            if (other == null || other == this) continue;
+            if (isReadyToReproduce() && other.isReadyToReproduce() && gender != other.gender)
+            {
+                Debug.Log("Valid mate found: " + hit.name);
+                float distance = Vector2.Distance(transform.position, hit.transform.position);
+                if (distance < closestDistance)
+                {
+                    closest = hit.gameObject;
+                    closestDistance = distance;
+                }
+            }
+        }
+
         return closest;
     }
 
@@ -119,6 +196,36 @@ public class BiljojedAI : MonoBehaviour
             Math.Clamp(point.x,minBounds.x,maxBounds.x),
             Math.Clamp(point.y,minBounds.y,maxBounds.y)
             );
+    }
+
+    IEnumerator ReproduceWith(BiljojedAI mate)
+    {
+        isInteracting = true;
+        hasTarget = false;
+        yield return new WaitForSecondsRealtime(2f);
+        
+        Vector2 spawnPosition = (Vector2)transform.position;
+        GameObject child = Instantiate(agentPrefab, spawnPosition, Quaternion.identity);
+        
+        var childAi = child.GetComponent<BiljojedAI>();
+        childAi.isBorn = true;
+
+        float geneticMutation = Random.Range(-0.5f, 0.5f);
+        
+        childAi.moveSpeed = (moveSpeed+mate.moveSpeed+sightRange)/2+geneticMutation;
+        childAi.sightRange = (sightRange+mate.sightRange)/2+geneticMutation;
+        
+        childAi.hungerRate = (moveSpeed + sightRange) * 1.5f;
+        childAi.thirstRate = (moveSpeed + sightRange) * 2f;
+
+        int malefemale = Random.Range(0, 2);
+        if (malefemale == 0) childAi.gender = false;
+        else childAi.gender = true;
+        
+        readyToReproduce = 0;
+        mate.readyToReproduce = 0;
+        
+        isInteracting = false;
     }
 
     IEnumerator Interacting(GameObject target)
@@ -158,6 +265,11 @@ public class BiljojedAI : MonoBehaviour
         transform.position = pos;
     }
 
+    private bool isReadyToReproduce()
+    {
+        return hunger<=40 && thirst<=40 && readyToReproduce>=100;
+    }
+    
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.green;
