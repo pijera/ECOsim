@@ -33,14 +33,28 @@ public class BiljojedAI : MonoBehaviour
     private float dyingOfThirst;
     private float thirstRate;
     
+    //Zivotni vek
+    [Header("Zivotni vek")] 
+    public float lifespan;
+    private float lifespanValue;
+    public float maxLifespan;
+    public float minLifespan;
+    
     //Reprodukcija
     [Header("Reprodukcija")]
     [SerializeField]
     private bool gender;//0-zensko(false) 1-musko(true)
-    [SerializeField]
-    private float readyToReproduce;
-    public float readyToReproduceRate;
+    public float isTimeToReproduce;
+    private float readyToReproduceValue;
+    public float maxReadyToReproduceValue;
+    public float minReadyToReproduceValue;
+    private float readyToReproduceRate;
+    public float maxReadyToReproduceRate;
+    public float minReadyToReproduceRate;
     public Boolean isBorn = false;
+
+    public float maxGeneticMutation;
+    public float minGeneticMutation;
     
     private Vector2 targetPosition;
     private bool hasTarget = false;    
@@ -53,6 +67,8 @@ public class BiljojedAI : MonoBehaviour
 
     public GameObject agentPrefab;
     
+    
+    
     void Start()
     {
         if (!isBorn)
@@ -61,7 +77,11 @@ public class BiljojedAI : MonoBehaviour
             sightRange = Random.Range(minSightRange, maxSightRange);
             hungerRate = (moveSpeed + sightRange) * 1.5f;
             thirstRate = (moveSpeed + sightRange) * 2f;
-
+            readyToReproduceRate = Random.Range(minReadyToReproduceRate, maxReadyToReproduceRate);
+            readyToReproduceValue = Random.Range(minReadyToReproduceValue, maxReadyToReproduceValue);
+            lifespan = Random.Range(minLifespan, maxLifespan);
+            lifespanValue = lifespan;
+            
             int malefemale = Random.Range(0, 2);
             if (malefemale == 0)
             {
@@ -77,12 +97,18 @@ public class BiljojedAI : MonoBehaviour
     
     void Update()
     {
+        if (lifespan<=0)
+        {
+            Destroy(gameObject);
+        }
+        
         if (isWaiting)return;
         if (isInteracting)return;
         
         hunger += Time.deltaTime * hungerRate;
         thirst += Time.deltaTime * thirstRate;
-        readyToReproduce += Time.deltaTime * readyToReproduceRate;
+        isTimeToReproduce += Time.deltaTime * readyToReproduceRate;
+        lifespan -= Time.deltaTime;
         
         GameObject target = FindTarget();
         
@@ -210,7 +236,18 @@ public class BiljojedAI : MonoBehaviour
         var childAi = child.GetComponent<BiljojedAI>();
         childAi.isBorn = true;
 
-        float geneticMutation = Random.Range(-0.5f, 0.5f);
+        geneInheritance(mate, childAi);
+        
+        isTimeToReproduce = 0;
+        mate.isTimeToReproduce = 0;
+        childAi.isTimeToReproduce = 0;
+        
+        isInteracting = false;
+    }
+
+    public void geneInheritance(BiljojedAI mate, BiljojedAI childAi)
+    {
+        float geneticMutation = Random.Range(minGeneticMutation, maxGeneticMutation);
         
         childAi.moveSpeed = (moveSpeed+mate.moveSpeed+sightRange)/2+geneticMutation;
         childAi.sightRange = (sightRange+mate.sightRange)/2+geneticMutation;
@@ -218,14 +255,14 @@ public class BiljojedAI : MonoBehaviour
         childAi.hungerRate = (moveSpeed + sightRange) * 1.5f;
         childAi.thirstRate = (moveSpeed + sightRange) * 2f;
 
+        childAi.lifespan = (lifespanValue + mate.lifespanValue)/2 + Random.Range(-3f, 3f);
+        childAi.lifespanValue = (lifespanValue + mate.lifespanValue)/2 + Random.Range(-3f, 3f);
+        childAi.readyToReproduceValue = (readyToReproduceValue + mate.readyToReproduceValue) / 2 + Random.Range(-10f, 10f);
+        childAi.readyToReproduceRate = (readyToReproduceRate + mate.readyToReproduceRate) / 2 + Random.Range(-2f, 2f);
+        
         int malefemale = Random.Range(0, 2);
         if (malefemale == 0) childAi.gender = false;
         else childAi.gender = true;
-        
-        readyToReproduce = 0;
-        mate.readyToReproduce = 0;
-        
-        isInteracting = false;
     }
 
     IEnumerator Interacting(GameObject target)
@@ -267,7 +304,7 @@ public class BiljojedAI : MonoBehaviour
 
     private bool isReadyToReproduce()
     {
-        return hunger<=40 && thirst<=40 && readyToReproduce>=100;
+        return hunger<=40 && thirst<=40 && isTimeToReproduce>=readyToReproduceValue;
     }
     
     private void OnDrawGizmosSelected()

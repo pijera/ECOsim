@@ -102,16 +102,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4cec16d35103a0b45a48415b441a1211, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  moveSpeed: 0
   maxMoveSpeed: 1.5
   minMoveSpeed: 4
+  sightRange: 0
   maxSightRange: 2.5
   minSightRange: 4
   hunger: 0
   thirst: 0
+  lifespan: 0
+  maxLifespan: 40
+  minLifespan: 15
   gender: 0
-  readyToReproduce: 0
-  readyToReproduceRate: 10
+  isTimeToReproduce: 0
+  maxReadyToReproduceValue: 200
+  minReadyToReproduceValue: 100
+  maxReadyToReproduceRate: 15
+  minReadyToReproduceRate: 10
   isBorn: 0
+  maxGeneticMutation: 0.3
+  minGeneticMutation: -0.3
   maxBounds: {x: 9.5, y: 4.5}
   minBounds: {x: -9.5, y: -4.5}
   agentPrefab: {fileID: 5640339459727741933}
