@@ -52,7 +52,10 @@ public class BiljojedAI : MonoBehaviour
     public float maxReadyToReproduceRate;
     public float minReadyToReproduceRate;
     public Boolean isBorn = false;
-
+    public int maxChildren;
+    public int numbOfChildren;
+    
+    [Header("Ostalo")]
     public float maxGeneticMutation;
     public float minGeneticMutation;
     
@@ -71,7 +74,7 @@ public class BiljojedAI : MonoBehaviour
     
     void Start()
     {
-        if (!isBorn)
+        if (!isBorn)//samo ako je na pocetku postavljen onda ce dobijati nasumicne osobine
         {
             moveSpeed = Random.Range(minMoveSpeed, maxMoveSpeed);
             sightRange = Random.Range(minSightRange, maxSightRange);
@@ -81,6 +84,7 @@ public class BiljojedAI : MonoBehaviour
             readyToReproduceValue = Random.Range(minReadyToReproduceValue, maxReadyToReproduceValue);
             lifespan = Random.Range(minLifespan, maxLifespan);
             lifespanValue = lifespan;
+            numbOfChildren = Random.Range(1, maxChildren + 1);
             
             int malefemale = Random.Range(0, 2);
             if (malefemale == 0)
@@ -119,15 +123,15 @@ public class BiljojedAI : MonoBehaviour
 
         if (isReadyToReproduce())
         {
-            var mate = FindMate();
+            var mate = FindMate();//trazi jedinku koja zadovoljava kriterijum
             if (mate!=null)
             {
                 targetPosition = mate.transform.position;
-                hasTarget = true;
+                hasTarget = true;//uzima njenu lokaciju
 
                 if (Vector2.Distance(transform.position, mate.transform.position) < 0.5f)
                 {
-                    StartCoroutine(ReproduceWith(mate.GetComponent<BiljojedAI>()));
+                    StartCoroutine(ReproduceWith(mate.GetComponent<BiljojedAI>()));//ako joj se dovoljno priblizi moze da krene da se razmnozava
                 }
             }
         }
@@ -138,7 +142,7 @@ public class BiljojedAI : MonoBehaviour
 
             if (dist < 0.5f)
             {
-                StartCoroutine(Interacting(target));
+                StartCoroutine(Interacting(target));//ako se meti priblizi dovoljno interaktuje sa vodom ili hranom
                 return;
             }
 
@@ -148,10 +152,10 @@ public class BiljojedAI : MonoBehaviour
         
         if (!hasTarget || Vector2.Distance(transform.position, targetPosition) < 0.2f)
         {
-            StartCoroutine(WaitBeforGoing());
+            StartCoroutine(WaitBeforGoing());//cekaj pre nego sto opet krenes
         }
 
-        MoveTowardsTarget();
+        MoveTowardsTarget();//pomeraj se ka meti koja je izabrana
     }
 
     GameObject FindTarget()
@@ -162,27 +166,30 @@ public class BiljojedAI : MonoBehaviour
         
         foreach (var hit in hits)
         {
-            if (hunger > 50f && hit.CompareTag("Food"))
+            if (hunger > 50f && hit.CompareTag("Food"))//ako vidi hranu dok je gladan
             {
+                var food = hit.GetComponent<FoodGrowth>();
+                if (food == null || food.numbOfFruits <= 0) continue;//i hrane ima 
+                
                 float distance = Vector2.Distance(transform.position, hit.transform.position);
-                if (distance < closestDistance)
+                if (distance < closestDistance)//i nije previse blizu
                 {
-                    closest = hit.gameObject;
+                    closest = hit.gameObject;//uzimam tu hranu
                     closestDistance = distance;
                 }
             }
-            if (thirst > 50f && hit.CompareTag("Water"))
+            if (thirst > 50f && hit.CompareTag("Water"))//ako u vidi vodu dok je zedan
             {
                 float distance = Vector2.Distance(transform.position, hit.transform.position);
-                if (distance < closestDistance)
+                if (distance < closestDistance)//i nije previse blizu
                 {
-                    closest = hit.gameObject;
+                    closest = hit.gameObject;//uzimam tu vodu
                     closestDistance = distance;
                 }
             }
             
         }
-        return closest;
+        return closest;//vracam hranu ili vodu
     }
 
     GameObject FindMate()
@@ -193,23 +200,22 @@ public class BiljojedAI : MonoBehaviour
 
         foreach (var hit in hits)
         {
-            if (!hit.CompareTag("Biljojed")) continue;
+            if (!hit.CompareTag("Biljojed")) continue;//ako ne vidi drugu jedinku nastavi
 
             var other = hit.GetComponent<BiljojedAI>();
             if (other == null || other == this) continue;
-            if (isReadyToReproduce() && other.isReadyToReproduce() && gender != other.gender)
+            if (isReadyToReproduce() && other.isReadyToReproduce() && gender != other.gender)//ako su obe jedinke spremne i razlitiog su pola
             {
-                Debug.Log("Valid mate found: " + hit.name);
                 float distance = Vector2.Distance(transform.position, hit.transform.position);
-                if (distance < closestDistance)
+                if (distance < closestDistance)// i nisu previse blizu
                 {
-                    closest = hit.gameObject;
+                    closest = hit.gameObject;//vrati jedinku
                     closestDistance = distance;
                 }
             }
         }
 
-        return closest;
+        return closest;//vrati je
     }
 
     Vector2 GetRandomTargetInSightRange()
@@ -217,11 +223,11 @@ public class BiljojedAI : MonoBehaviour
         float angle = Random.Range(0f, Mathf.PI * 2f);
         float radius = Random.Range(0.3f, sightRange);
         Vector2 offset = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle))*radius;
-        Vector2 point = (Vector2)transform.position + offset;
+        Vector2 point = (Vector2)transform.position + offset;//generisem nasumicnu tacku u videokrugu
         return new Vector2(
             Math.Clamp(point.x,minBounds.x,maxBounds.x),
             Math.Clamp(point.y,minBounds.y,maxBounds.y)
-            );
+            );//clempujem vrednosti da ne bi izasao van ekrana
     }
 
     IEnumerator ReproduceWith(BiljojedAI mate)
@@ -229,23 +235,29 @@ public class BiljojedAI : MonoBehaviour
         isInteracting = true;
         hasTarget = false;
         yield return new WaitForSecondsRealtime(2f);
-        
-        Vector2 spawnPosition = (Vector2)transform.position;
-        GameObject child = Instantiate(agentPrefab, spawnPosition, Quaternion.identity);
-        
-        var childAi = child.GetComponent<BiljojedAI>();
-        childAi.isBorn = true;
 
-        geneInheritance(mate, childAi);
+        if (gender == false)//ako je zesnko
+        {
+            for (int i = 0; i < numbOfChildren; i++)//za broj dece koji ta zenka moze da rodi
+            {
+                Vector2 spawnPosition = (Vector2)transform.position;
+                GameObject child = Instantiate(agentPrefab, spawnPosition, Quaternion.identity);//na njoj je rodi
+        
+                var childAi = child.GetComponent<BiljojedAI>();
+                childAi.isBorn = true;//da ne bi dobila nasumicne vrednosti za osobine
+
+                geneInheritance(mate, childAi);
+                childAi.isTimeToReproduce = 0;
+            }
+        }
         
         isTimeToReproduce = 0;
         mate.isTimeToReproduce = 0;
-        childAi.isTimeToReproduce = 0;
         
         isInteracting = false;
     }
 
-    public void geneInheritance(BiljojedAI mate, BiljojedAI childAi)
+    public void geneInheritance(BiljojedAI mate, BiljojedAI childAi)//prosecna vrednost osobine od majke i oca +- geneticka mutacija
     {
         float geneticMutation = Random.Range(minGeneticMutation, maxGeneticMutation);
         
@@ -259,6 +271,10 @@ public class BiljojedAI : MonoBehaviour
         childAi.lifespanValue = (lifespanValue + mate.lifespanValue)/2 + Random.Range(-3f, 3f);
         childAi.readyToReproduceValue = (readyToReproduceValue + mate.readyToReproduceValue) / 2 + Random.Range(-10f, 10f);
         childAi.readyToReproduceRate = (readyToReproduceRate + mate.readyToReproduceRate) / 2 + Random.Range(-2f, 2f);
+        int rand = Random.Range(0, 20);
+        if (rand == 0)
+            childAi.numbOfChildren = (int)Math.Round(((float)numbOfChildren + (float)mate.numbOfChildren) / 2) + 1;
+        else childAi.numbOfChildren = (int)Math.Round(((float)numbOfChildren + (float)mate.numbOfChildren) / 2);
         
         int malefemale = Random.Range(0, 2);
         if (malefemale == 0) childAi.gender = false;
@@ -270,8 +286,20 @@ public class BiljojedAI : MonoBehaviour
         isInteracting = true;
         hasTarget = false;
         yield return new WaitForSecondsRealtime(1f);
-        if (target.CompareTag("Food")) hunger = 0;
-        if (target.CompareTag("Water")) thirst = 0;
+        if (target.CompareTag("Food"))//ako jedinka interektuje sa hranom
+        {
+            var food = target.GetComponent<FoodGrowth>();
+            if (food!=null && food.TryConsumeFruit())//samo ako ima hrane
+            {
+                hunger = 0;//pojeo je
+            }
+            else
+            {
+                isInteracting = false;
+                yield break;//ako nema preskoci
+            }
+        }
+        if (target.CompareTag("Water")) thirst = 0;//pije vodu
         isInteracting = false;
     }
     
@@ -294,7 +322,7 @@ public class BiljojedAI : MonoBehaviour
         float stepSize = Mathf.Max(1.5f,moveSpeed*Time.deltaTime);
         float actualStep = Math.Min(stepSize, distanceToTarget);
         
-        Vector2 pos = Vector2.MoveTowards(currentPosition, targetPosition, actualStep*Time.deltaTime*moveSpeed);
+        Vector2 pos = Vector2.MoveTowards(currentPosition, targetPosition, actualStep*Time.deltaTime*moveSpeed);//krece se ka tacki sa minimalnim korakom od 1
         
         pos.x = Mathf.Clamp(pos.x, minBounds.x, maxBounds.x);
         pos.y = Mathf.Clamp(pos.y, minBounds.y, maxBounds.y);

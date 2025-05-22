@@ -120,6 +120,8 @@ MonoBehaviour:
   maxReadyToReproduceRate: 15
   minReadyToReproduceRate: 10
   isBorn: 0
+  maxChildren: 5
+  numbOfChildren: 0
   maxGeneticMutation: 0.3
   minGeneticMutation: -0.3
   maxBounds: {x: 9.5, y: 4.5}
