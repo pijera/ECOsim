@@ -28,7 +28,7 @@ public class FoodGrowth : MonoBehaviour
                 GetComponent<Renderer>().material.color = Color.gray;
                 break;
             case 1:
-                GetComponent<Renderer>().material.color = Color.red;
+                GetComponent<Renderer>().material.color = Color.blue;
                 break;
             case 2:
                 GetComponent<Renderer>().material.color = Color.yellow;

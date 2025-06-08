@@ -8,8 +8,7 @@ public class BiljojedAI : MonoBehaviour
 {
     //Brzina kretanja
     [Header("Brzina")]
-    [SerializeField]
-    private float moveSpeed;
+    public float moveSpeed;
     public float maxMoveSpeed;
     public float minMoveSpeed;
     
@@ -55,6 +54,13 @@ public class BiljojedAI : MonoBehaviour
     public int maxChildren;
     public int numbOfChildren;
     
+    //Boja
+    [Header("Boja")]
+    private Color color;
+    private float rValue;
+    private float gValue;
+    private float bValue;
+    
     [Header("Ostalo")]
     public float maxGeneticMutation;
     public float minGeneticMutation;
@@ -85,8 +91,15 @@ public class BiljojedAI : MonoBehaviour
             lifespan = Random.Range(minLifespan, maxLifespan);
             lifespanValue = lifespan;
             numbOfChildren = Random.Range(1, maxChildren + 1);
+            color = new Color(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f));
+            rValue = color.r;
+            gValue = color.g;
+            bValue = color.b;
+            
+            
             
             int malefemale = Random.Range(0, 2);
+            gameObject.GetComponent<SpriteRenderer>().color = color;
             if (malefemale == 0)
             {
                 gender = false;
@@ -96,7 +109,7 @@ public class BiljojedAI : MonoBehaviour
                 gender = true;
             }
         }
-
+        
     }
     
     void Update()
@@ -271,10 +284,19 @@ public class BiljojedAI : MonoBehaviour
         childAi.lifespanValue = (lifespanValue + mate.lifespanValue)/2 + Random.Range(-3f, 3f);
         childAi.readyToReproduceValue = (readyToReproduceValue + mate.readyToReproduceValue) / 2 + Random.Range(-10f, 10f);
         childAi.readyToReproduceRate = (readyToReproduceRate + mate.readyToReproduceRate) / 2 + Random.Range(-2f, 2f);
-        int rand = Random.Range(0, 20);
-        if (rand == 0)
+        
+        int rand = Random.Range(0, 15);
+        if (rand == 1)
             childAi.numbOfChildren = (int)Math.Round(((float)numbOfChildren + (float)mate.numbOfChildren) / 2) + 1;
         else childAi.numbOfChildren = (int)Math.Round(((float)numbOfChildren + (float)mate.numbOfChildren) / 2);
+
+        childAi.rValue = Random.Range(rValue, mate.rValue);
+        childAi.gValue = Random.Range(gValue, mate.gValue);
+        childAi.bValue = Random.Range(bValue, mate.bValue);
+        
+        childAi.color = new Color(childAi.rValue,childAi.gValue,childAi.bValue);
+        childAi.gameObject.GetComponent<SpriteRenderer>().color = childAi.color;
+        
         
         int malefemale = Random.Range(0, 2);
         if (malefemale == 0) childAi.gender = false;
@@ -341,4 +363,5 @@ public class BiljojedAI : MonoBehaviour
         Gizmos.DrawWireSphere(transform.position, sightRange);
         Gizmos.DrawWireSphere(transform.position, 1f);
     }
+    
 }
