@@ -9,16 +9,14 @@ public class CSVLogger : MonoBehaviour
     private List<string> headers;
     private bool isInitialized = false;
 
-    void Awake() // Use Awake to ensure it's ready before anything else
+    void Awake()
     {
-        // Ensure folder exists
-        string dataFolder = Path.Combine(Application.dataPath, "Data");
+        string dataFolder = System.Environment.GetFolderPath(System.Environment.SpecialFolder.Desktop);
         if (!Directory.Exists(dataFolder))
             Directory.CreateDirectory(dataFolder);
 
         fullPath = Path.Combine(dataFolder, fileName);
 
-        // Try to clear file contents safely
         try
         {
             if (File.Exists(fullPath))

@@ -9,7 +9,8 @@ public class FoodGrowth : MonoBehaviour
     public float timeToGrow;
 
     public bool isGrowing;
-
+    public GameObject Food;
+    
     void Start()
     {
         StartCoroutine(Grow());
@@ -25,16 +26,16 @@ public class FoodGrowth : MonoBehaviour
         switch (numbOfFruits)
         {
             case 0:
-                GetComponent<Renderer>().material.color = Color.gray;
+                Food.GetComponent<Renderer>().material.color = Color.gray;
                 break;
             case 1:
-                GetComponent<Renderer>().material.color = Color.blue;
+                Food.GetComponent<Renderer>().material.color = Color.red;
                 break;
             case 2:
-                GetComponent<Renderer>().material.color = Color.yellow;
+                Food.GetComponent<Renderer>().material.color = Color.yellow;
                 break;
             case 3:
-                GetComponent<Renderer>().material.color = Color.green;
+                Food.GetComponent<Renderer>().material.color = Color.green;
                 break;
         }
     }

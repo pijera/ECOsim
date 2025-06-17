@@ -15,7 +15,7 @@ public class BiljojedAI : MonoBehaviour
     //Vid
     [Header("Vid")]
     [SerializeField]
-    private float sightRange;
+    public float sightRange;
     public float maxSightRange;
     public float minSightRange;
     
@@ -24,18 +24,18 @@ public class BiljojedAI : MonoBehaviour
     [SerializeField]
     private float hunger;
     private float dyingOfHunger;
-    private float hungerRate;
+    public float hungerRate;
     
     //Zedj
     [SerializeField]
     private float thirst;
     private float dyingOfThirst;
-    private float thirstRate;
+    public float thirstRate;
     
     //Zivotni vek
     [Header("Zivotni vek")] 
     public float lifespan;
-    private float lifespanValue;
+    public float lifespanValue;
     public float maxLifespan;
     public float minLifespan;
     
@@ -44,10 +44,10 @@ public class BiljojedAI : MonoBehaviour
     [SerializeField]
     private bool gender;//0-zensko(false) 1-musko(true)
     public float isTimeToReproduce;
-    private float readyToReproduceValue;
+    public float readyToReproduceValue;
     public float maxReadyToReproduceValue;
     public float minReadyToReproduceValue;
-    private float readyToReproduceRate;
+    public float readyToReproduceRate;
     public float maxReadyToReproduceRate;
     public float minReadyToReproduceRate;
     public Boolean isBorn = false;
@@ -75,22 +75,27 @@ public class BiljojedAI : MonoBehaviour
     public Vector2 minBounds;
 
     public GameObject agentPrefab;
-    
-    
+    public Animator animator;
+    private Vector2 previousPosition;
     
     void Start()
     {
+        previousPosition = transform.position;
         if (!isBorn)//samo ako je na pocetku postavljen onda ce dobijati nasumicne osobine
         {
-            moveSpeed = Random.Range(minMoveSpeed, maxMoveSpeed);
+            /*moveSpeed = Random.Range(minMoveSpeed, maxMoveSpeed);
             sightRange = Random.Range(minSightRange, maxSightRange);
-            hungerRate = (moveSpeed + sightRange) * 1.5f;
-            thirstRate = (moveSpeed + sightRange) * 2f;
+            
             readyToReproduceRate = Random.Range(minReadyToReproduceRate, maxReadyToReproduceRate);
             readyToReproduceValue = Random.Range(minReadyToReproduceValue, maxReadyToReproduceValue);
             lifespan = Random.Range(minLifespan, maxLifespan);
+            
+            numbOfChildren = Random.Range(1, maxChildren + 1);*/
+            
+            hungerRate = (moveSpeed + sightRange) * 1.5f;
+            thirstRate = (moveSpeed + sightRange) * 2f;
+            
             lifespanValue = lifespan;
-            numbOfChildren = Random.Range(1, maxChildren + 1);
             color = new Color(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f));
             rValue = color.r;
             gValue = color.g;
@@ -169,6 +174,7 @@ public class BiljojedAI : MonoBehaviour
         }
 
         MoveTowardsTarget();//pomeraj se ka meti koja je izabrana
+        UpdateAnimation();
     }
 
     GameObject FindTarget()
@@ -297,7 +303,6 @@ public class BiljojedAI : MonoBehaviour
         childAi.color = new Color(childAi.rValue,childAi.gValue,childAi.bValue);
         childAi.gameObject.GetComponent<SpriteRenderer>().color = childAi.color;
         
-        
         int malefemale = Random.Range(0, 2);
         if (malefemale == 0) childAi.gender = false;
         else childAi.gender = true;
@@ -356,6 +361,24 @@ public class BiljojedAI : MonoBehaviour
     {
         return hunger<=40 && thirst<=40 && isTimeToReproduce>=readyToReproduceValue;
     }
+    
+    private void UpdateAnimation()
+    {
+        if (animator == null) return;
+
+        float movementThreshold = 0.0001f;
+        float distanceMoved = Vector2.Distance((Vector2)transform.position, previousPosition);
+
+        bool isWalking = distanceMoved > movementThreshold;
+        animator.SetBool("isWalking", isWalking);
+        
+        previousPosition = transform.position;
+        if (!isWalking)
+        {
+            transform.rotation = Quaternion.identity;
+        }
+    }
+    
     
     private void OnDrawGizmosSelected()
     {
