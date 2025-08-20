@@ -10,6 +10,11 @@ public class FoodGrowth : MonoBehaviour
 
     public bool isGrowing;
     public GameObject Food;
+
+    public Sprite GrassBlades3;
+    public Sprite GrassBlades2;
+    public Sprite GrassBlades1;
+    public Sprite GrassBlades0;
     
     void Start()
     {
@@ -26,16 +31,16 @@ public class FoodGrowth : MonoBehaviour
         switch (numbOfFruits)
         {
             case 0:
-                Food.GetComponent<Renderer>().material.color = Color.gray;
+                Food.GetComponent<SpriteRenderer>().sprite = GrassBlades0;
                 break;
             case 1:
-                Food.GetComponent<Renderer>().material.color = Color.red;
+                Food.GetComponent<SpriteRenderer>().sprite = GrassBlades1;
                 break;
             case 2:
-                Food.GetComponent<Renderer>().material.color = Color.yellow;
+                Food.GetComponent<SpriteRenderer>().sprite = GrassBlades2;
                 break;
             case 3:
-                Food.GetComponent<Renderer>().material.color = Color.green;
+                Food.GetComponent<SpriteRenderer>().sprite = GrassBlades3;
                 break;
         }
     }
@@ -45,11 +50,11 @@ public class FoodGrowth : MonoBehaviour
     {
         while (true)
         {
-            yield return new WaitForSecondsRealtime(timeToGrow);
-            if (numbOfFruits < maxNumbOfFruits)
-            {
-                numbOfFruits++;
-            }
+                yield return new WaitForSecondsRealtime(timeToGrow);
+                if (numbOfFruits < maxNumbOfFruits)
+                {
+                    numbOfFruits++;
+                }
         }
     }
     

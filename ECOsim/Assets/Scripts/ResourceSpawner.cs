@@ -8,6 +8,8 @@ public class ResourceSpawner : MonoBehaviour
     public GameObject waterPrefab;
     public Transform[] spawnPoints;
 
+    public Sprite[] pondSprites;
+    
     private List<int> usedIndices = new List<int>();
 
     void Start()
@@ -28,6 +30,11 @@ public class ResourceSpawner : MonoBehaviour
             }
 
             Instantiate(prefab, spawnPoints[index].position, Quaternion.identity);
+            if (prefab==waterPrefab)
+            {
+                int rand  = Random.Range(0,pondSprites.Length);
+                prefab.GetComponent<SpriteRenderer>().sprite = pondSprites[rand];
+            }
         }
     }
 

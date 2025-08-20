@@ -15,14 +15,14 @@ public class MetricsTracker : MonoBehaviour
 
     IEnumerator LogMetrics()
     {
-        // Log immediately at start
+        // Loguje sve odma na pocetku
         Dictionary<string, float> initialMetrics = CalculateMetrics();
         csvLogger.LogData(initialMetrics, timeElapsed);
         timeElapsed += logInterval;
 
         while (true)
         {
-            yield return new WaitForSecondsRealtime(logInterval);
+            yield return new WaitForSeconds(logInterval);
             Dictionary<string, float> metrics = CalculateMetrics();
             csvLogger.LogData(metrics, timeElapsed);
             timeElapsed += logInterval;
