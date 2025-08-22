@@ -9,6 +9,8 @@ public class BiljojedAI : MonoBehaviour
     // Brzina kretanja
     [Header("Brzina")]
     public float moveSpeed;
+    [HideInInspector]
+    public float baseMoveSpeed;
     public float maxMoveSpeed;
     public float minMoveSpeed;
     
@@ -16,6 +18,8 @@ public class BiljojedAI : MonoBehaviour
     [Header("Vid")]
     [SerializeField]
     public float sightRange;
+    [HideInInspector]
+    public float baseSightRange;
     public float maxSightRange;
     public float minSightRange;
     
@@ -25,12 +29,16 @@ public class BiljojedAI : MonoBehaviour
     private float hunger;
     private float dyingOfHunger;
     public float hungerRate;
+    [HideInInspector]
+    public float baseHungerRate;
     
     // Zedj
     [SerializeField]
     private float thirst;
     private float dyingOfThirst;
     public float thirstRate;
+    [HideInInspector]
+    public float baseThirstRate;
     
     // Zivotni vek
     [Header("Zivotni vek")] 
@@ -38,6 +46,8 @@ public class BiljojedAI : MonoBehaviour
     public float lifespanValue;
     public float maxLifespan;
     public float minLifespan;
+    [HideInInspector]
+    public float baseLifespan;
     
     // Reprodukcija
     [Header("Reprodukcija")]
@@ -48,6 +58,8 @@ public class BiljojedAI : MonoBehaviour
     public float maxReadyToReproduceValue;
     public float minReadyToReproduceValue;
     public float readyToReproduceRate;
+    [HideInInspector]
+    public float baseReadyToReproduceRate;
     public float maxReadyToReproduceRate;
     public float minReadyToReproduceRate;
     public Boolean isBorn = false;
@@ -102,10 +114,18 @@ public class BiljojedAI : MonoBehaviour
         agent.obstacleAvoidanceType = ObstacleAvoidanceType.NoObstacleAvoidance;
         agent.avoidancePriority = 99;
 
+        baseMoveSpeed = moveSpeed;
+        baseSightRange = sightRange;
+        baseLifespan = lifespanValue;
+        baseReadyToReproduceRate = readyToReproduceRate;
+        
         if (!isBorn) // samo ako je na pocetku postavljen onda ce dobijati nasumicne osobine
         {
             hungerRate = (moveSpeed + sightRange);
             thirstRate = (moveSpeed + sightRange);
+
+            baseHungerRate = hungerRate;
+            baseThirstRate = thirstRate;
             
             lifespanValue = lifespan;
             color = new Color(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f));
@@ -307,6 +327,9 @@ public class BiljojedAI : MonoBehaviour
         childAi.hungerRate = (moveSpeed + sightRange);
         childAi.thirstRate = (moveSpeed + sightRange);
 
+        childAi.baseHungerRate = childAi.hungerRate;
+        childAi.baseThirstRate = childAi.thirstRate;
+        
         childAi.lifespan = (lifespanValue + mate.lifespanValue) / 2 + Random.Range(-50f, 50f);
         childAi.lifespanValue = (lifespanValue + mate.lifespanValue) / 2 + Random.Range(-50f, 50f);
         childAi.readyToReproduceValue = (readyToReproduceValue + mate.readyToReproduceValue) / 2 + Random.Range(-30f, 30f);

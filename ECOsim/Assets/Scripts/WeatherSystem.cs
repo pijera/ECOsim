@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public enum WeatherType{Clear,Rain}
+public enum WeatherType{Clear,Rain,Snow,Dry}
 public class WeatherSystem : MonoBehaviour
 {
     public static WeatherSystem instance;
@@ -9,10 +9,23 @@ public class WeatherSystem : MonoBehaviour
     public GameObject rainEffects;
     [SerializeField]
     private ParticleSystem[] rainSystems;
+    public float rainGrowthMultiplier;
+    public float rainSightMultiplier;
+    public float rainSpeedMultiplier;
     
-    public float growthMultiplier;
-    public float sightMultiplier;
-    public float speedMultiplier;
+    public GameObject snowEffects;
+    [SerializeField]
+    private ParticleSystem[] snowSystems;
+    public float snowGrowthMultiplier;
+    public float snowFoodRateMultiplier;
+    public float snowReprodceRateMultiplier;
+    
+    public GameObject droughtEffects;
+    [SerializeField]
+    private ParticleSystem[] droughtSystems;
+    public float droughtGrowthMultiplier;
+    public float droughtThirstMultiplier;
+    
     
     void Awake()
     {
@@ -25,6 +38,16 @@ public class WeatherSystem : MonoBehaviour
         {
             ToggleWeather(WeatherType.Rain);
         }
+
+        if (Input.GetKeyDown(KeyCode.G))
+        {
+            ToggleWeather(WeatherType.Snow);
+        }
+
+        if (Input.GetKeyDown(KeyCode.D))
+        {
+            ToggleWeather(WeatherType.Dry);
+        }
     }
 
     void ToggleWeather(WeatherType type)
@@ -36,6 +59,7 @@ public class WeatherSystem : MonoBehaviour
     void setWeather(WeatherType type)
     {
         stopParticleSystems(rainSystems,rainEffects);
+        stopParticleSystems(snowSystems,snowEffects);
         currentWeather = type;
         
         switch (type)
@@ -44,12 +68,12 @@ public class WeatherSystem : MonoBehaviour
             {
                 foreach (var plant in FindObjectsOfType<FoodGrowth>())
                 {
-                    plant.timeToGrow /= growthMultiplier;
+                    plant.timeToGrow = plant.baseTimeToGrow;
                 }
                 foreach (var animal in FindObjectsOfType<BiljojedAI>())
                 {
-                    animal.moveSpeed /= speedMultiplier;
-                    animal.sightRange /= sightMultiplier;
+                    animal.moveSpeed = animal.baseMoveSpeed;
+                    animal.sightRange = animal.baseSightRange;
                 }
                 break;
             }
@@ -59,15 +83,47 @@ public class WeatherSystem : MonoBehaviour
                 startParticleSystems(rainSystems);
                 foreach (var plant in FindObjectsOfType<FoodGrowth>())
                 {
-                    plant.timeToGrow *= growthMultiplier;
+                    plant.timeToGrow *= rainGrowthMultiplier;
                 }
                 foreach (var animal in FindObjectsOfType<BiljojedAI>())
                 {
-                    animal.moveSpeed *= speedMultiplier;
-                    animal.sightRange *= sightMultiplier;
+                    animal.moveSpeed *= rainSpeedMultiplier;
+                    animal.sightRange *= rainSightMultiplier;
                 }
                 break;
             }
+            case WeatherType.Snow:
+            {
+                snowEffects.SetActive(true);
+                startParticleSystems(snowSystems);
+                foreach (var plant in FindObjectsOfType<FoodGrowth>())
+                {
+                    plant.timeToGrow *= snowGrowthMultiplier;
+                }
+
+                foreach (var animal in FindObjectsOfType<BiljojedAI>())
+                {
+                    animal.hungerRate *= snowFoodRateMultiplier;
+                    animal.readyToReproduceRate *= snowReprodceRateMultiplier;
+                }
+                break;
+            }
+            case WeatherType.Dry:
+            {
+                droughtEffects.SetActive(true);
+                startParticleSystems(droughtSystems);
+                foreach (var plant in FindObjectsOfType<FoodGrowth>())
+                {
+                    plant.timeToGrow *= droughtGrowthMultiplier;
+                }
+
+                foreach (var animal in FindObjectsOfType<BiljojedAI>())
+                {
+                   animal.thirstRate *= droughtThirstMultiplier;
+                }
+                break;
+            }
+            
         }
     }
 

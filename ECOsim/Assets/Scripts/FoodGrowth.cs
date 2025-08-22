@@ -7,7 +7,9 @@ public class FoodGrowth : MonoBehaviour
     public int numbOfFruits;
     public int maxNumbOfFruits = 3;
     public float timeToGrow;
-
+    [HideInInspector]
+    public float baseTimeToGrow;
+    
     public bool isGrowing;
     public GameObject Food;
 
@@ -18,6 +20,7 @@ public class FoodGrowth : MonoBehaviour
     
     void Start()
     {
+        baseTimeToGrow = timeToGrow;
         StartCoroutine(Grow());
     }
     
