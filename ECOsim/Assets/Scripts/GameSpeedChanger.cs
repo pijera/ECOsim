@@ -1,39 +1,44 @@
-using TMPro;
 using UnityEngine;
 
 public class GameSpeedChanger : MonoBehaviour
 {
     bool isPaused = false;
     public GameObject pauseBars;
-    private int currentTimeScale;
-    public void Update()
+
+    private int currentTimeScale = 1;
+
+    void Start()
     {
-        
+        Time.timeScale = currentTimeScale;
+    }
+
+    void Update()
+    {
         if (Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.Space))
         {
-            isPaused = !isPaused;
-            pauseBars.SetActive(isPaused);   
-            Time.timeScale = isPaused ? 0 : currentTimeScale;
+            TogglePause();
         }
     }
-    public void times1GameSpeed()
+
+    void TogglePause()
     {
-        Time.timeScale = 1;
-        currentTimeScale = 1;
+        isPaused = !isPaused;
+        pauseBars.SetActive(isPaused);
+        Time.timeScale = isPaused ? 0 : currentTimeScale;
     }
-    public void times3GameSpeed()
+
+    public void SetGameSpeed(int speed)
     {
-        Time.timeScale = 3;
-        currentTimeScale = 3;
+        Debug.Log("radi");
+        
+        currentTimeScale = speed;
+        
+        if (!isPaused)
+            Time.timeScale = currentTimeScale;
     }
-    public void times5GameSpeed()
-    {
-        Time.timeScale = 5;
-        currentTimeScale = 5;
-    }
-    public void times10GameSpeed()
-    {
-        Time.timeScale = 10;
-        currentTimeScale = 10;
-    }
+
+    public void times1GameSpeed()  => SetGameSpeed(1);
+    public void times3GameSpeed()  => SetGameSpeed(3);
+    public void times5GameSpeed()  => SetGameSpeed(5);
+    public void times10GameSpeed() => SetGameSpeed(10);
 }

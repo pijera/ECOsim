@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public enum WeatherType{Clear,Rain,Snow,Dry}
@@ -5,7 +6,8 @@ public class WeatherSystem : MonoBehaviour
 {
     public static WeatherSystem instance;
     public WeatherType currentWeather;
-
+    public WeatherType StartWeatherType;
+    
     public GameObject rainEffects;
     [SerializeField]
     private ParticleSystem[] rainSystems;
@@ -30,8 +32,10 @@ public class WeatherSystem : MonoBehaviour
     void Awake()
     {
         instance = this;
+        setWeather(StartWeatherType);
+        currentWeather = StartWeatherType;
     }
-    
+
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.F))

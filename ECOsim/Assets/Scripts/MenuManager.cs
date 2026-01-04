@@ -1,6 +1,7 @@
 using UnityEngine;
 using TMPro;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class MenuManager : MonoBehaviour
 {
@@ -26,8 +27,15 @@ public class MenuManager : MonoBehaviour
     public TMP_InputField foodInput;
     public TMP_InputField waterInput;
     
-    
-    
+    public TMP_Dropdown dropdown;
+
+    private string selectedScene;
+
+    void Start()
+    {
+        dropdown.onValueChanged.AddListener(OnMapSelected);
+    }
+
     public void StartSimulation()
     {
         int count = 10; // Default fallback
@@ -49,8 +57,6 @@ public class MenuManager : MonoBehaviour
         float.TryParse(minReadyToReproduceValueInput.text, out float minReadyToReproduceValue);
         float.TryParse(maxReadyToReproduceValueInput.text, out float maxReadyToReproduceValue);
         
-        
-        
         SimulationSettings.Instance.numberOfAgents = count;
         SimulationSettings.Instance.minSpeed = minBrzina;
         SimulationSettings.Instance.maxSpeed = maxBrzina;
@@ -65,7 +71,17 @@ public class MenuManager : MonoBehaviour
         SimulationSettings.Instance.maxReadyToReproduceValue = maxReadyToReproduceValue;
         SimulationSettings.Instance.foodSourceCount = int.Parse(foodInput.text);
         SimulationSettings.Instance.waterSourceCount = int.Parse(waterInput.text);
-        
-        SceneManager.LoadScene("SimulationScene"); 
+
+        SceneManager.LoadScene(selectedScene); 
+    }
+
+    void OnMapSelected(int index)
+    {
+        switch (index)
+        {
+            case 1: selectedScene = "Polje"; break;
+            case 2: selectedScene = "Pustinja"; break;
+            case 3: selectedScene = "Tundra"; break;
+        }
     }
 }
